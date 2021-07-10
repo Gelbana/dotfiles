@@ -2,5 +2,5 @@
 .idea
 *.log
 tmp/
-hardware-configuration.nix
 result/
+/result

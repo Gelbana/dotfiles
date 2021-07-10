@@ -9,10 +9,14 @@
     jetbrains-mono
     inconsolata-nerdfont
     gnomeExtensions.paperwm
-    gnomeExtensions.hot-edge
+    gnomeExtensions.vertical-overview
+    gnomeExtensions.cleaner-overview
+    gnomeExtensions.dash-to-dock
+    gnomeExtensions.audio-switcher-40
+    gnomeExtensions.appindicator
     mpv
     discord-canary
-    ferdi
+    noisetorch
 
     # emacs dependencies
     binutils
@@ -27,6 +31,7 @@
     pandoc
     plantuml
 
+    # helping find nix syntax error
     rnix-lsp
     nixfmt
 
@@ -105,9 +110,6 @@
     }];
   };
   programs.autorandr = { enable = true; };
-
-  # xsession = {
-  #   enable = true;
 
   #   # windowManager.awesome = { enable = true; };
   # };
