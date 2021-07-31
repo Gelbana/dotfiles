@@ -38,7 +38,7 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
-(setq initial-frame-alist '((top . 1) (left . 1) (width . 100) (height . 500)))
+(setq initial-frame-alist '((top . 1) (left . 1) (width . 100) (height . 100)))
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one

@@ -7,29 +7,32 @@
 {
   imports = [ # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ./games/genshin.nix
   ];
 
   # Use the GRUB 2 boot loader.
   #  boot.loader.grub.enable = true;
   #  boot.loader.grub.version = 2;
+  boot.supportedFilesystems = [ "ntfs" ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.grub.efiSupport = true;
+  boot.loader.grub.useOSProber = true;
+  boot.loader.grub.enable = true;
   boot.loader.grub.efiInstallAsRemovable = true;
   boot.loader.efi.efiSysMountPoint = "/boot";
   # Define on which hard drive you want to install Grub.
-  #boot.loader.grub.device = "/dev/sda3"; # or "nodev" for efi only
+  boot.loader.grub.device = "nodev"; # or "nodev" for efi only
 
-  networking.hostName = "test-nix"; # Define your hostname.
+  networking.hostName = "big-nix"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Set your time zone.
   time.timeZone = "Australia/Brisbane";
-
+  time.hardwareClockInLocalTime = true;
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.ens33.useDHCP = true;
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -52,15 +55,32 @@
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.support32Bit = true;
 
+  programs.noisetorch.enable = true;
+
+  hardware.opengl = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      vaapiIntel
+      vaapiVdpau
+      libvdpau-va-gl
+    ];
+    driSupport32Bit = true;
+  };
+
+  hardware.openrazer.enable = true;
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nano.isNormalUser = true;
 
-  users.users.nano.extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+  users.users.nano.extraGroups =
+    [ "wheel" "plugdev" ]; # Enable ‘sudo’ for the user.
 
+  boot.blacklistedKernelModules = [ "nouveau" ];
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -73,6 +93,9 @@
     cachix
     neofetch
     unzip
+    virtmanager
+    win-virtio
+    killall
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -87,8 +110,6 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-
-  virtualisation.vmware.guest.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -106,8 +127,42 @@
 
   services.xserver = {
     enable = true;
-    displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
+    displayManager.sddm.enable = true;
+    # displayManager.autoLogin.enable = true;
+    # displayManager.autoLogin.user = "nano";
+    desktopManager.plasma5.enable = true;
+    videoDrivers = [ "nvidia" ];
+    exportConfiguration = true;
+    monitorSection = ''
+      VendorName     "Unknown"
+      ModelName      "Samsung C49RG9x"
+      HorizSync       190.0 - 190.0
+      VertRefresh     48.0 - 120.0
+      Option         "DPMS"
+    '';
+    deviceSection = ''
+      VendorName     "NVIDIA Corporation"
+      BoardName      "GeForce GTX 1070"
+    '';
+    screenSection = ''
+      DefaultDepth    24
+      Option         "Stereo" "0"
+      Option         "nvidiaXineramaInfoOrder" "DFP-6"
+      Option         "metamodes" "5120x1440 +0+0 {ForceCompositionPipeline=On, ForceFullCompositionPipeline=On, AllowGSYNCCompatible=On}"
+      Option         "MultiGPU" "Off"
+      Option         "BaseMosaic" "off"
+      SubSection     "Display"
+        Depth       24
+      EndSubSection
+                '';
+    inputClassSections = [''
+      Identifier "mouse accel"
+      Driver "libinput"
+      MatchIsPointer "on"
+      Option "AccelProfile" "flat"
+      Option "AccelSpeed" "0"
+    ''];
+
     # displayManager = {
     #   defaultSession = "none+awesome";
     #   lightdm.enable = true;
@@ -120,6 +175,8 @@
     #   luadbi-mysql
     # ];
   };
+
+  programs.steam.enable = true;
 
   nixpkgs.config.allowUnfree = true;
   nix = {

@@ -8,15 +8,25 @@
     htop
     jetbrains-mono
     inconsolata-nerdfont
-    gnomeExtensions.paperwm
-    gnomeExtensions.vertical-overview
-    gnomeExtensions.cleaner-overview
-    gnomeExtensions.dash-to-dock
-    gnomeExtensions.audio-switcher-40
-    gnomeExtensions.appindicator
+    # gnomeExtensions.paperwm
+    # gnomeExtensions.vertical-overview
+    # gnomeExtensions.cleaner-overview
+    # gnomeExtensions.dash-to-dock
+    # gnomeExtensions.audio-switcher-40
+    # gnomeExtensions.appindicator
     mpv
-    discord-canary
-    noisetorch
+    discord
+    chromium
+    steam-run
+    audacity
+    lutris
+
+    # peripherals
+    razergenie
+
+    # gaming
+    wine
+    winetricks
 
     # emacs dependencies
     binutils
@@ -39,9 +49,9 @@
 
   programs.bash = {
     enable = true;
-    initExtra = ''
-      exec fish
-    '';
+    # initExtra = ''
+    #   exec fish
+    # '';
   };
 
   programs.emacs = {
@@ -71,11 +81,11 @@
     settings = import ./config/alacritty/alacritty.nix;
   };
 
-  gtk = {
-    enable = true;
-    theme.name = "Dracula";
-    theme.package = pkgs.dracula-theme;
-  };
+  # gtk = {
+  #   enable = true;
+  #   theme.name = "Dracula";
+  #   theme.package = pkgs.dracula-theme;
+  # };
 
   programs.neovim = {
     enable = true;

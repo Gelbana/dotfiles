@@ -10,7 +10,7 @@
   outputs =
     { self, nixpkgs, nixpkgs-master, home-manager, neovim-nightly-overlay }: {
       nixosConfigurations = {
-        test-nix = nixpkgs.lib.nixosSystem {
+        big-nix = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             ./configuration.nix

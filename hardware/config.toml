@@ -1,0 +1,10 @@
+top_row = ["Esc", "M", "T", "T", "T"]
+second_row = ["Tab", "Q", "W", "E", "R"]
+third_row = ["LeftCtrl", "A", "S", "D", "F"]
+bottom_row = ["LeftShift", "Z", "X", "C", "V"]
+up = "F2"
+down = "F4"
+left = "F1"
+right = "F3"
+side_button = "Space"
+space_bar = "Z"
