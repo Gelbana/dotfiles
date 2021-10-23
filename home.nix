@@ -8,25 +8,22 @@
     htop
     jetbrains-mono
     inconsolata-nerdfont
-    # gnomeExtensions.paperwm
-    # gnomeExtensions.vertical-overview
-    # gnomeExtensions.cleaner-overview
-    # gnomeExtensions.dash-to-dock
-    # gnomeExtensions.audio-switcher-40
-    # gnomeExtensions.appindicator
+    gnomeExtensions.paperwm
+    gnomeExtensions.dash-to-dock
+    gnomeExtensions.audio-switcher-40
+    gnomeExtensions.appindicator
+    gnomeExtensions.fly-pie
+    gnomeExtensions.blur-my-shell
     mpv
     discord
     chromium
     steam-run
     audacity
     lutris
+    appimage-run
 
-    # peripherals
-    razergenie
-
-    # gaming
-    wine
-    winetricks
+    papirus-icon-theme
+    obs-studio
 
     # emacs dependencies
     binutils
@@ -47,13 +44,6 @@
 
   ];
 
-  programs.bash = {
-    enable = true;
-    # initExtra = ''
-    #   exec fish
-    # '';
-  };
-
   programs.emacs = {
     enable = true;
     #    package = pkgs.emacsPgtkGcc;
@@ -67,7 +57,7 @@
 
   programs.starship = {
     enable = true;
-    enableFishIntegration = true;
+    enableZshIntegration = true;
   };
 
   programs.git = {
@@ -81,11 +71,11 @@
     settings = import ./config/alacritty/alacritty.nix;
   };
 
-  # gtk = {
-  #   enable = true;
-  #   theme.name = "Dracula";
-  #   theme.package = pkgs.dracula-theme;
-  # };
+  gtk = {
+    enable = true;
+    theme.name = "Dracula";
+    theme.package = pkgs.dracula-theme;
+  };
 
   programs.neovim = {
     enable = true;
@@ -107,24 +97,40 @@
     theme = ./config/rofi/dracula.rasi;
   };
 
-  programs.fish = {
+  programs.zsh = {
     enable = true;
-    plugins = [{
-      name = "dracula";
-      src = pkgs.fetchFromGitHub {
-        owner = "dracula";
-        repo = "fish";
-        rev = "28db361b55bb49dbfd7a679ebec9140be8c2d593";
-        sha256 = "vdqYlEyYvlPVgTkwXbE8GVZo0UBBT88JyMSWYykhfx4=";
-      };
-    }];
+    enableCompletion = true;
+    plugins = [
+      {
+        name = "zsh-autosuggestions";
+        src = pkgs.fetchFromGitHub {
+          owner = "zsh-users";
+          repo = "zsh-autosuggestions";
+          rev = "v0.7.0";
+          sha256 = "sha256-KLUYpUu4DHRumQZ3w59m9aTW6TBKMCXl2UcKi4uMd7w=";
+        };
+      }
+      {
+        name = "zsh-syntax-highlighting";
+        src = pkgs.fetchFromGitHub {
+          owner = "zsh-users";
+          repo = "zsh-syntax-highlighting";
+          rev = "0.7.1";
+          sha256 = "sha256-gOG0NLlaJfotJfs+SUhGgLTNOnGLjoqnUp54V9aFJg8=";
+        };
+      }
+      {
+        name = "zsh-history-substring-search";
+        src = pkgs.fetchFromGitHub {
+          owner = "zsh-users";
+          repo = "zsh-history-substring-search";
+          rev = "v1.0.2";
+          sha256 = "sha256-Ptxik1r6anlP7QTqsN1S2Tli5lyRibkgGlVlwWZRG3k=";
+        };
+      }
+    ];
   };
-  programs.autorandr = { enable = true; };
 
-  #   # windowManager.awesome = { enable = true; };
-  # };
-
-  home.file.".config/awesome/rc.lua".source = ./config/awesomewm/rc.lua;
   home.file.".doom.d" = {
     source = ./config/doom-emacs;
     recursive = true;
