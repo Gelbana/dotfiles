@@ -25,6 +25,7 @@
                 neovim-nightly-overlay.overlay
                 (import ./config/gnome/paperwm/paperwm.nix)
                 (import ./config/gnome/dash-to-dock/dash-to-dock.nix)
+                (import ./hardware/corectrl.nix)
               ];
             })
           ];

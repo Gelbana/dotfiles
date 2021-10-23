@@ -8,7 +8,8 @@
 
   boot.initrd.availableKernelModules =
     [ "nvme" "xhci_pci" "ahci" "usbhid" "sd_mod" ];
-  boot.kernelModules = [ ];
+  boot.initrd.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" = {
@@ -24,4 +25,6 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/315fd22a-bc15-460c-baef-45ab7ff8c4c6"; }];
 
+  # high-resolution display
+  hardware.video.hidpi.enable = lib.mkDefault true;
 }
