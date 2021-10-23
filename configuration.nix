@@ -14,7 +14,6 @@
   #  boot.loader.grub.enable = true;
   #  boot.loader.grub.version = 2;
   boot.supportedFilesystems = [ "ntfs" ];
-  boot.loader.systemd-boot.enable = true;
   boot.loader.grub.efiSupport = true;
   boot.loader.grub.useOSProber = true;
   boot.loader.grub.enable = true;
@@ -45,59 +44,88 @@
   #   keyMap = "us";
   # };
 
+  fonts.fonts = with pkgs; [ source-han-sans ];
   # Configure keymap in X11
   services.xserver.layout = "us";
   # services.xserver.xkbOptions = "eurosign:e";
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
-
   # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-  hardware.pulseaudio.support32Bit = true;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+  };
 
   programs.noisetorch.enable = true;
 
   hardware.opengl = {
     enable = true;
-    extraPackages = with pkgs; [
-      intel-media-driver
-      vaapiIntel
-      vaapiVdpau
-      libvdpau-va-gl
-    ];
+    driSupport = true;
     driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      amdvlk
+      vulkan-tools
+      vulkan-loader
+      vulkan-validation-layers
+      vulkan-tools-lunarg
+      vaapiVdpau
+    ];
+    extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
   };
-
-  hardware.openrazer.enable = true;
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nano.isNormalUser = true;
-
+  users.users.nano.shell = pkgs.zsh;
   users.users.nano.extraGroups =
-    [ "wheel" "plugdev" ]; # Enable ‘sudo’ for the user.
+    [ "wheel" "plugdev" "networkmanager" "corectrl" ];
 
-  boot.blacklistedKernelModules = [ "nouveau" ];
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
+  boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Environment system packages
+  # $ nix search wget (to search)
   environment.systemPackages = with pkgs; [
+    pulseaudio
     wget
-    firefox
+    glibc
+    firefox-wayland
     alacritty
     vim
     fzf
     git
-    cachix
     neofetch
+    cachix
     unzip
     virtmanager
     win-virtio
     killall
+    chromium
+    libratbag
+    libpcap
+    tcpdump
+    piper
+    gnomeExtensions.gsconnect
+    gnomeExtensions.volume-mixer
+    libva-utils
+    glxinfo
+
+    vulkan-tools
+    vulkan-loader
+    vulkan-validation-layers
+    vulkan-tools-lunarg
+    wineWowPackages.unstable
+    (winetricks.override { wine = wineWowPackages.unstable; })
   ];
 
+  programs.corectrl = {
+    enable = true;
+    gpuOverclock = {
+      enable = true;
+      ppfeaturemask = "0xffffffff";
+    };
+  };
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -111,73 +139,118 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
+  services.ratbagd.enable = true;
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
+  programs.kdeconnect = {
+    enable = true;
+    package = pkgs.gnomeExtensions.gsconnect;
+  };
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "20.09"; # Did you read the comment?
+  networking.networkmanager.enable = true;
 
   services.xserver = {
     enable = true;
-    displayManager.sddm.enable = true;
-    # displayManager.autoLogin.enable = true;
-    # displayManager.autoLogin.user = "nano";
-    desktopManager.plasma5.enable = true;
-    videoDrivers = [ "nvidia" ];
-    exportConfiguration = true;
-    monitorSection = ''
-      VendorName     "Unknown"
-      ModelName      "Samsung C49RG9x"
-      HorizSync       190.0 - 190.0
-      VertRefresh     48.0 - 120.0
-      Option         "DPMS"
-    '';
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
+    videoDrivers = [ "amdgpu" ];
     deviceSection = ''
-      VendorName     "NVIDIA Corporation"
-      BoardName      "GeForce GTX 1070"
+      Option "VariableRefresh" "true"
     '';
-    screenSection = ''
-      DefaultDepth    24
-      Option         "Stereo" "0"
-      Option         "nvidiaXineramaInfoOrder" "DFP-6"
-      Option         "metamodes" "5120x1440 +0+0 {ForceCompositionPipeline=On, ForceFullCompositionPipeline=On, AllowGSYNCCompatible=On}"
-      Option         "MultiGPU" "Off"
-      Option         "BaseMosaic" "off"
-      SubSection     "Display"
-        Depth       24
-      EndSubSection
-                '';
-    inputClassSections = [''
-      Identifier "mouse accel"
-      Driver "libinput"
-      MatchIsPointer "on"
-      Option "AccelProfile" "flat"
-      Option "AccelSpeed" "0"
-    ''];
-
-    # displayManager = {
-    #   defaultSession = "none+awesome";
-    #   lightdm.enable = true;
-    #   lightdm.greeters.gtk.enable = true;
-
-    # };
-    # windowManager.awesome.enable = true;
-    # windowManager.awesome.luaModules = with pkgs.luaPackages; [
-    #   luarocks
-    #   luadbi-mysql
-    # ];
+    wacom.enable = true;
   };
 
-  programs.steam.enable = true;
+  systemd.tmpfiles.rules = [
+    "L+ /run/gdm/.config/monitors.xml - - - - ${
+      pkgs.writeText "gdm-monitors.xml" ''
+        <monitors version="2">
+          <configuration>
+            <logicalmonitor>
+              <x>0</x>
+              <y>0</y>
+              <scale>1</scale>
+              <primary>yes</primary>
+              <monitor>
+                <monitorspec>
+                  <connector>DP-1</connector>
+                  <vendor>SAM</vendor>
+                  <product>C49RG9x</product>
+                  <serial>H1AK500000</serial>
+                </monitorspec>
+                <mode>
+                  <width>5120</width>
+                  <height>1440</height>
+                  <rate>119.97019195556641</rate>
+                </mode>
+              </monitor>
+            </logicalmonitor>
+          </configuration>
+          <configuration>
+            <logicalmonitor>
+              <x>0</x>
+              <y>0</y>
+              <scale>1</scale>
+              <primary>yes</primary>
+              <monitor>
+                <monitorspec>
+                  <connector>DP-4</connector>
+                  <vendor>SAM</vendor>
+                  <product>C49RG9x</product>
+                  <serial>H1AK500000</serial>
+                </monitorspec>
+                <mode>
+                  <width>5120</width>
+                  <height>1440</height>
+                  <rate>119.97019195556641</rate>
+                </mode>
+              </monitor>
+            </logicalmonitor>
+          </configuration>
+        </monitors>
+              ''
+    }"
+  ];
+  environment.sessionVariables = { MOZ_ENABLE_WAYLAND = "1"; };
+  # Exclude unused GNOME packages
+  environment.gnome.excludePackages = with pkgs; [
+    gnome.cheese
+    gnome-photos
+    gnome.gnome-music
+    gnome.gnome-terminal
+    gnome.gedit
+    gnome-tour
+  ];
 
+  security.wrappers = {
+    wine = {
+      source = "${pkgs.wineWowPackages.unstable}/bin/wine";
+      capabilities = "cap_net_raw,cap_net_admin,cap_sys_ptrace=eip";
+      owner = "nano";
+      group = "users";
+      permissions = "u+rx,g+rx";
+    };
+    wine64 = {
+      source = "${pkgs.wineWowPackages.unstable}/bin/wine64";
+      capabilities = "cap_net_raw,cap_net_admin,cap_sys_ptrace=eip";
+      owner = "nano";
+      group = "users";
+      permissions = "u+rx,g+rx";
+    };
+    wineserver = {
+      source = "${pkgs.wineWowPackages.unstable}/bin/wineserver";
+      capabilities = "cap_net_raw,cap_net_admin,cap_sys_ptrace=eip";
+      owner = "nano";
+      group = "users";
+      permissions = "u+rx,g+rx";
+    };
+  };
+  programs.gamemode.enable = true;
+  programs.steam.enable = true;
+  programs.zsh.enable = true;
   nixpkgs.config.allowUnfree = true;
   nix = {
     trustedUsers = [ "root" "nano" ];
@@ -187,4 +260,6 @@
     '';
   };
 
+  # No touching
+  system.stateVersion = "20.09";
 }
