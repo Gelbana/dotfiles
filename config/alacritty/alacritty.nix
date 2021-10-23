@@ -1,4 +1,11 @@
 {
+  window = {
+    padding = {
+      x = 10;
+      y = 10;
+    };
+  };
+
   colors = {
     primary = {
       background = "0x282a36";
