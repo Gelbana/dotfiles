@@ -5,9 +5,9 @@
 { config, pkgs, inputs, ... }:
 
 {
-  imports = [ # Include the results of the hardware scan.
+  imports = [
+    # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ./games/genshin.nix
   ];
 
   # Use the GRUB 2 boot loader.
@@ -22,7 +22,7 @@
   # Define on which hard drive you want to install Grub.
   boot.loader.grub.device = "nodev"; # or "nodev" for efi only
 
-  networking.hostName = "big-nix"; # Define your hostname.
+  networking.hostName = "devbox-nix"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Set your time zone.
@@ -32,6 +32,13 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
+  networking.interfaces.enp7s0.useDHCP = true;
+  networking.interfaces.br0.useDHCP = true;
+  networking.bridges = {
+    "br0" = {
+      interfaces = [ "enp7s0" ];
+    };
+  };
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -50,46 +57,34 @@
   # services.xserver.xkbOptions = "eurosign:e";
 
   # Enable CUPS to print documents.
-  # services.printing.enable = true;
+  services.printing.enable = true;
   # Enable sound.
   security.rtkit.enable = true;
+  hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
+    pulse.enable = true;
   };
-
-  programs.noisetorch.enable = true;
 
   hardware.opengl = {
     enable = true;
     driSupport = true;
     driSupport32Bit = true;
-    extraPackages = with pkgs; [
-      amdvlk
-      vulkan-tools
-      vulkan-loader
-      vulkan-validation-layers
-      vulkan-tools-lunarg
-      vaapiVdpau
-    ];
-    extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nano.isNormalUser = true;
   users.users.nano.shell = pkgs.zsh;
   users.users.nano.extraGroups =
-    [ "wheel" "plugdev" "networkmanager" "corectrl" ];
+    [ "wheel" "plugdev" "networkmanager" "libvirtd" ];
 
-  boot.initrd.kernelModules = [ "amdgpu" ];
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_5_19;
   # Environment system packages
   # $ nix search wget (to search)
   environment.systemPackages = with pkgs; [
-    pulseaudio
     wget
-    glibc
     firefox-wayland
     alacritty
     vim
@@ -102,44 +97,26 @@
     win-virtio
     killall
     chromium
-    libratbag
-    libpcap
-    tcpdump
-    piper
+    gnome.gnome-tweaks
     gnomeExtensions.gsconnect
     gnomeExtensions.volume-mixer
     libva-utils
-    glxinfo
-
-    vulkan-tools
-    vulkan-loader
-    vulkan-validation-layers
-    vulkan-tools-lunarg
-    wineWowPackages.unstable
-    (winetricks.override { wine = wineWowPackages.unstable; })
+    bottles
+    gnome-blackbox
   ];
 
-  programs.corectrl = {
-    enable = true;
-    gpuOverclock = {
-      enable = true;
-      ppfeaturemask = "0xffffffff";
-    };
-  };
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  programs.mtr.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
 
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-
-  services.ratbagd.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -151,69 +128,17 @@
     package = pkgs.gnomeExtensions.gsconnect;
   };
 
-  networking.networkmanager.enable = true;
 
   services.xserver = {
     enable = true;
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
-    videoDrivers = [ "amdgpu" ];
-    deviceSection = ''
-      Option "VariableRefresh" "true"
-    '';
-    wacom.enable = true;
+    videoDrivers = [ "nvidia" ];
   };
 
-  systemd.tmpfiles.rules = [
-    "L+ /run/gdm/.config/monitors.xml - - - - ${
-      pkgs.writeText "gdm-monitors.xml" ''
-        <monitors version="2">
-          <configuration>
-            <logicalmonitor>
-              <x>0</x>
-              <y>0</y>
-              <scale>1</scale>
-              <primary>yes</primary>
-              <monitor>
-                <monitorspec>
-                  <connector>DP-1</connector>
-                  <vendor>SAM</vendor>
-                  <product>C49RG9x</product>
-                  <serial>H1AK500000</serial>
-                </monitorspec>
-                <mode>
-                  <width>5120</width>
-                  <height>1440</height>
-                  <rate>119.97019195556641</rate>
-                </mode>
-              </monitor>
-            </logicalmonitor>
-          </configuration>
-          <configuration>
-            <logicalmonitor>
-              <x>0</x>
-              <y>0</y>
-              <scale>1</scale>
-              <primary>yes</primary>
-              <monitor>
-                <monitorspec>
-                  <connector>DP-4</connector>
-                  <vendor>SAM</vendor>
-                  <product>C49RG9x</product>
-                  <serial>H1AK500000</serial>
-                </monitorspec>
-                <mode>
-                  <width>5120</width>
-                  <height>1440</height>
-                  <rate>119.97019195556641</rate>
-                </mode>
-              </monitor>
-            </logicalmonitor>
-          </configuration>
-        </monitors>
-              ''
-    }"
-  ];
+  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
+  programs.dconf.enable = true;
+
   environment.sessionVariables = { MOZ_ENABLE_WAYLAND = "1"; };
   # Exclude unused GNOME packages
   environment.gnome.excludePackages = with pkgs; [
@@ -225,40 +150,20 @@
     gnome-tour
   ];
 
-  security.wrappers = {
-    wine = {
-      source = "${pkgs.wineWowPackages.unstable}/bin/wine";
-      capabilities = "cap_net_raw,cap_net_admin,cap_sys_ptrace=eip";
-      owner = "nano";
-      group = "users";
-      permissions = "u+rx,g+rx";
-    };
-    wine64 = {
-      source = "${pkgs.wineWowPackages.unstable}/bin/wine64";
-      capabilities = "cap_net_raw,cap_net_admin,cap_sys_ptrace=eip";
-      owner = "nano";
-      group = "users";
-      permissions = "u+rx,g+rx";
-    };
-    wineserver = {
-      source = "${pkgs.wineWowPackages.unstable}/bin/wineserver";
-      capabilities = "cap_net_raw,cap_net_admin,cap_sys_ptrace=eip";
-      owner = "nano";
-      group = "users";
-      permissions = "u+rx,g+rx";
-    };
-  };
-  programs.gamemode.enable = true;
-  programs.steam.enable = true;
   programs.zsh.enable = true;
   nixpkgs.config.allowUnfree = true;
   nix = {
-    trustedUsers = [ "root" "nano" ];
+    settings.trusted-users = [ "root" "nano" ];
     package = pkgs.nixFlakes;
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
   };
+
+  virtualisation.libvirtd.enable = true;
+  virtualisation.libvirtd.qemu.ovmf.enable = true;
+
+
 
   # No touching
   system.stateVersion = "20.09";

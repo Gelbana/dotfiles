@@ -3,33 +3,36 @@
 {
   # temporarily disable gnome settings until it works nicely
   # imports = [ ./config/dconf.nix ];
+  home.stateVersion = "20.09";
 
   home.packages = with pkgs; [
-    htop
+    # General stuff
+    btop
     jetbrains-mono
+    inter
+    overpass
     inconsolata-nerdfont
-    gnomeExtensions.paperwm
-    gnomeExtensions.dash-to-dock
-    gnomeExtensions.audio-switcher-40
+    mononoki
     gnomeExtensions.appindicator
-    gnomeExtensions.fly-pie
     gnomeExtensions.blur-my-shell
-    mpv
-    discord
-    chromium
-    steam-run
-    audacity
-    lutris
-    appimage-run
-
+    gnomeExtensions.tiling-assistant
+    gnomeExtensions.dash-to-dock
+    gnomeExtensions.paperwm
+    gnomeExtensions.impatience
+    gnomeExtensions.reorder-workspaces
+    gnomeExtensions.pano
     papirus-icon-theme
-    obs-studio
+    celluloid
+    chromium
+    appimage-run
+    remmina
+    rocketchat-desktop
 
-    # emacs dependencies
+
+
+    # Emacs related stuff
     binutils
     gnutls # for TLS connectivity
-
-    # Optional dependencies
     fd # faster projectile indexing
     imagemagick # for image-dired
     zstd # for undo-fu-session/undo-tree compression
@@ -37,17 +40,40 @@
     emacs-all-the-icons-fonts
     pandoc
     plantuml
+    (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
+    mu # email
+    isync # email
+    msmtp
 
-    # helping find nix syntax error
+    # Nix related stuff
     rnix-lsp
     nixfmt
+
+    # Dev related stuff
+    mono
+    dotnet-sdk
+    omnisharp-roslyn
+    jetbrains.rider
+    insomnia
+    azuredatastudio
+
+    # Android dev related stuff
+    android-tools
+    android-studio
+    inkscape
 
   ];
 
   programs.emacs = {
     enable = true;
-    #    package = pkgs.emacsPgtkGcc;
-    extraPackages = epkgs: [ epkgs.vterm ];
+    package = pkgs.emacs28NativeComp;
+    extraPackages = epkgs: [ epkgs.vterm epkgs.sqlite3 ];
+  };
+
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
   };
 
   programs.lsd = {
@@ -62,8 +88,8 @@
 
   programs.git = {
     enable = true;
-    userName = "Gelbana";
-    userEmail = "rubapiggy@gmail.com";
+    userName = "aden.messori";
+    userEmail = "aden.messori@infinitypath.com.au";
   };
 
   programs.alacritty = {
@@ -71,31 +97,16 @@
     settings = import ./config/alacritty/alacritty.nix;
   };
 
-  gtk = {
-    enable = true;
-    theme.name = "Dracula";
-    theme.package = pkgs.dracula-theme;
-  };
-
   programs.neovim = {
     enable = true;
     vimAlias = true;
     viAlias = true;
-    extraConfig = builtins.readFile ./config/neovim/init.vim;
-    plugins = with pkgs.vimPlugins; [
-      vim-nix
-      dracula-vim
-      nvim-lspconfig
-      vim-which-key
-      completion-nvim
-      fzf-vim
-    ];
   };
 
-  programs.rofi = {
-    enable = true;
-    theme = ./config/rofi/dracula.rasi;
-  };
+
+
+  programs.fzf.enable = true;
+  programs.fzf.enableZshIntegration = true;
 
   programs.zsh = {
     enable = true;
@@ -129,10 +140,9 @@
         };
       }
     ];
-  };
-
-  home.file.".doom.d" = {
-    source = ./config/doom-emacs;
-    recursive = true;
+    initExtra = ''
+      bindkey '^[OA' history-substring-search-up
+      bindkey '^[OB' history-substring-search-down
+    '';
   };
 }

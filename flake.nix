@@ -4,13 +4,14 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-master.url = "github:nixos/nixpkgs/master";
     home-manager.url = "github:nix-community/home-manager";
+    blackbox.url = "github:mitchmindtree/blackbox.nix";
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
   };
 
   outputs =
-    { self, nixpkgs, nixpkgs-master, home-manager, neovim-nightly-overlay }: {
+    { self, nixpkgs, nixpkgs-master, home-manager, neovim-nightly-overlay, blackbox }: {
       nixosConfigurations = {
-        big-nix = nixpkgs.lib.nixosSystem {
+        devbox-nix = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             ./configuration.nix
@@ -23,9 +24,8 @@
             ({ pkgs, ... }: {
               nixpkgs.overlays = [
                 neovim-nightly-overlay.overlay
-                (import ./config/gnome/paperwm/paperwm.nix)
-                (import ./config/gnome/dash-to-dock/dash-to-dock.nix)
-                (import ./hardware/corectrl.nix)
+                (_: _: { gnome-blackbox = blackbox.packages.x86_64-linux.blackbox; })
+                (import /home/nano/dotfiles/config/gnome/paperwm/paperwm.nix)
               ];
             })
           ];
