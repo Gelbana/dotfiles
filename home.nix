@@ -1,34 +1,36 @@
 { pkgs, inputs, ... }:
 
 {
-  # temporarily disable gnome settings until it works nicely
-  # imports = [ ./config/dconf.nix ];
   home.stateVersion = "20.09";
 
   home.packages = with pkgs; [
     # General stuff
-    btop
-    jetbrains-mono
-    inter
-    overpass
-    inconsolata-nerdfont
-    mononoki
-    gnomeExtensions.appindicator
-    gnomeExtensions.blur-my-shell
-    gnomeExtensions.tiling-assistant
-    gnomeExtensions.dash-to-dock
-    gnomeExtensions.paperwm
-    gnomeExtensions.impatience
-    gnomeExtensions.reorder-workspaces
-    gnomeExtensions.pano
-    papirus-icon-theme
     celluloid
     chromium
     appimage-run
     remmina
     rocketchat-desktop
+    dbeaver
+    nautilus-open-any-terminal
+    bitwarden
+    btop
 
+    # Fonts
+    jetbrains-mono
+    inter
+    overpass
+    inconsolata-nerdfont
+    mononoki
+    iosevka
 
+    # Gnome
+    gnomeExtensions.appindicator
+    gnomeExtensions.tiling-assistant
+    gnomeExtensions.dash-to-dock
+    gnomeExtensions.paperwm
+    gnomeExtensions.impatience
+    gnomeExtensions.reorder-workspaces
+    papirus-icon-theme
 
     # Emacs related stuff
     binutils
@@ -49,24 +51,42 @@
     rnix-lsp
     nixfmt
 
-    # Dev related stuff
+    # dotnet dev related stuff
     mono
     dotnet-sdk
     omnisharp-roslyn
     jetbrains.rider
     insomnia
-    azuredatastudio
+
+    neovim
+    neovide
+    libvterm
 
     # Android dev related stuff
     android-tools
     android-studio
     inkscape
 
+    kotlin-language-server
+    sumneko-lua-language-server
+
+    nodejs
+    nodePackages.typescript
+    nodePackages.typescript-language-server
+    nodePackages.npm
+    lazygit
+    lazydocker
   ];
+
+  # programs.neovim = {
+  #   enable = true;
+  #   vimAlias = true;
+  #   viAlias = true;
+  # };
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs28NativeComp;
+    package = pkgs.emacsLsp;
     extraPackages = epkgs: [ epkgs.vterm epkgs.sqlite3 ];
   };
 
@@ -92,21 +112,10 @@
     userEmail = "aden.messori@infinitypath.com.au";
   };
 
-  programs.alacritty = {
+  programs.fzf = {
     enable = true;
-    settings = import ./config/alacritty/alacritty.nix;
+    enableZshIntegration = true;
   };
-
-  programs.neovim = {
-    enable = true;
-    vimAlias = true;
-    viAlias = true;
-  };
-
-
-
-  programs.fzf.enable = true;
-  programs.fzf.enableZshIntegration = true;
 
   programs.zsh = {
     enable = true;
@@ -137,6 +146,15 @@
           repo = "zsh-history-substring-search";
           rev = "v1.0.2";
           sha256 = "sha256-Ptxik1r6anlP7QTqsN1S2Tli5lyRibkgGlVlwWZRG3k=";
+        };
+      }
+      {
+        name = "zsh-completions";
+        src = pkgs.fetchFromGitHub {
+          owner = "zsh-users";
+          repo = "zsh-completions";
+          rev = "0.34.0";
+          sha256 = "sha256-qSobM4PRXjfsvoXY6ENqJGI9NEAaFFzlij6MPeTfT0o=";
         };
       }
     ];

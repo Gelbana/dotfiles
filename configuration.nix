@@ -34,11 +34,7 @@
   networking.useDHCP = false;
   networking.interfaces.enp7s0.useDHCP = true;
   networking.interfaces.br0.useDHCP = true;
-  networking.bridges = {
-    "br0" = {
-      interfaces = [ "enp7s0" ];
-    };
-  };
+  networking.bridges = { "br0" = { interfaces = [ "enp7s0" ]; }; };
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -85,7 +81,7 @@
   # $ nix search wget (to search)
   environment.systemPackages = with pkgs; [
     wget
-    firefox-wayland
+    firefox
     alacritty
     vim
     fzf
@@ -100,11 +96,19 @@
     gnome.gnome-tweaks
     gnomeExtensions.gsconnect
     gnomeExtensions.volume-mixer
+    gnomeExtensions.pano
+    gsound
+    libgda
     libva-utils
     bottles
     gnome-blackbox
+    gcc
+    cmake
+    xclip
+    gnumake
+    wl-clipboard
   ];
-
+  programs.java.enable = true;
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   programs.mtr.enable = true;
@@ -128,7 +132,6 @@
     package = pkgs.gnomeExtensions.gsconnect;
   };
 
-
   services.xserver = {
     enable = true;
     displayManager.gdm.enable = true;
@@ -136,10 +139,10 @@
     videoDrivers = [ "nvidia" ];
   };
 
-  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
+  hardware.nvidia.package =
+    config.boot.kernelPackages.nvidiaPackages.legacy_470;
   programs.dconf.enable = true;
 
-  environment.sessionVariables = { MOZ_ENABLE_WAYLAND = "1"; };
   # Exclude unused GNOME packages
   environment.gnome.excludePackages = with pkgs; [
     gnome.cheese
@@ -162,8 +165,6 @@
 
   virtualisation.libvirtd.enable = true;
   virtualisation.libvirtd.qemu.ovmf.enable = true;
-
-
 
   # No touching
   system.stateVersion = "20.09";
